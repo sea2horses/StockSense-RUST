@@ -5,12 +5,14 @@ use crate::app::titles;
 use defer_rs::defer;
 use owo_colors::{OwoColorize, colors::*};
 
+type MenuOption = (String, fn(&mut App));
+
 pub struct Menu {
-    options: Vec<(String, fn(&mut App))>,
+    options: Vec<MenuOption>,
 }
 
 impl Menu {
-    pub fn new(options: Vec<(String, fn(&mut App))>) -> Self {
+    pub fn new(options: Vec<MenuOption>) -> Self {
         Menu { options }
     }
 
@@ -79,6 +81,17 @@ pub fn inventory_menu(app: &mut App) {
         let selected: usize = input::read("> ", "Ingrese un número válido.");
         if inventory_menu.exec(app, selected).is_none() {
             println!("{}", "Opcion Inválida".fg::<Red>())
+        }
+
+        if let Some(s) = &app.storer
+            && let Err(e) = s.save_inventory(&app.inventory)
+        {
+            println!(
+                "{} {}",
+                "No se pudo guardar el inventario al disco: ".fg::<Cyan>(),
+                e.fg::<Red>()
+            );
+            input::halt_until_enter();
         }
     }
     app.should_exit = false;

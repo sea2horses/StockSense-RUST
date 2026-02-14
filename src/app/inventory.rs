@@ -1,7 +1,9 @@
 use core::fmt;
+use std::io::{Read, Write};
 
 use owo_colors::{OwoColorize, colors::*};
 use rand::distr::{Alphanumeric, SampleString};
+use serde::{Deserialize, Serialize};
 
 pub enum InventoryError {
     ProductNotFound,
@@ -23,6 +25,7 @@ impl fmt::Display for InventoryError {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct InventoryItem {
     id: String,
     name: String,
@@ -131,6 +134,7 @@ impl InventoryItem {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Inventory {
     items: Vec<InventoryItem>,
 }
@@ -239,7 +243,31 @@ impl Inventory {
         }
     }
 
-    // TODO: Inventory Load from File (or stream) using Serialization
-    // TODO: Inventory Save to File (or stream) using Serialization
-    // TODO: Same thing but to CSV
+    // Inventory Load from File (or stream) using Serialization
+    pub fn load_from_stream(s: &mut impl Read) -> anyhow::Result<Self> {
+        let mut buf: Vec<u8> = Vec::new();
+        s.read_to_end(&mut buf)?;
+        let inv: Self = postcard::from_bytes(&buf)?;
+        Ok(inv)
+    }
+
+    // Inventory Save to File (or stream) using Serialization
+    pub fn save_to_stream(&self, s: &mut impl Write) -> anyhow::Result<()> {
+        let serialized = postcard::to_allocvec(self)?;
+        s.write_all(&serialized[..])?;
+        Ok(())
+    }
+
+    // Same thing but to CSV
+    pub fn csv_to_stream(&self, s: &mut impl Write) -> anyhow::Result<()> {
+        let mut w = csv::Writer::from_writer(s);
+
+        for item in &self.items {
+            w.serialize(item)?;
+        }
+
+        w.flush()?;
+
+        Ok(())
+    }
 }
