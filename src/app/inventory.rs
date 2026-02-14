@@ -142,6 +142,14 @@ impl Inventory {
         Inventory { items: Vec::new() }
     }
 
+    pub fn size(&self) -> usize {
+        self.items.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.size() == 0
+    }
+
     fn generate_unique_id(&self) -> String {
         loop {
             let id = Alphanumeric.sample_string(&mut rand::rng(), Self::ID_LENGTH);

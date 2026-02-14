@@ -92,7 +92,7 @@ pub fn inventory_add(app: &mut App) {
         input::halt_until_enter();
     };
 
-    println!("\n{}", "+ Nombre del Producto: ".fg::<Cyan>());
+    println!("{}", "+ Nombre del Producto: ".fg::<Cyan>());
     let name = input::read_string("> ");
 
     println!("\n{}", "+ Proveedor: ".fg::<Cyan>());
@@ -119,14 +119,19 @@ pub fn inventory_add(app: &mut App) {
 
 pub fn inventory_remove(app: &mut App) {
     clearscreen::clear().ok();
-    println!("{}\n", titles::inventory_title().fg::<Green>());
+    println!("{}", titles::inventory_title().fg::<Green>());
 
     defer! {
         input::halt_until_enter();
     };
 
+    if app.inventory.is_empty() {
+        println!("{}", "No hay productos en el inventario".fg::<Red>());
+        return;
+    }
+
     app.inventory.print();
-    println!("\n{}", "+ ID del Producto: ".fg::<Cyan>());
+    println!("{}", "+ ID del Producto: ".fg::<Cyan>());
     let id = input::read_string("> ");
 
     let removed = app.inventory.remove(id.as_str());
@@ -138,15 +143,20 @@ pub fn inventory_remove(app: &mut App) {
 
 pub fn inventory_edit(app: &mut App) {
     clearscreen::clear().ok();
-    println!("{}\n", titles::inventory_title().fg::<Green>());
+    println!("{}", titles::inventory_title().fg::<Green>());
 
     defer! {
         input::halt_until_enter();
     };
 
+    if app.inventory.is_empty() {
+        println!("{}", "No hay productos en el inventario".fg::<Red>());
+        return;
+    }
+
     app.inventory.print();
 
-    println!("\n{}", "+ ID del Producto: ".fg::<Cyan>());
+    println!("{}", "+ ID del Producto: ".fg::<Cyan>());
     let id = input::read_string("> ");
 
     let temp: &InventoryItem = if let Some(item) = app.inventory.find(id.as_str()) {
