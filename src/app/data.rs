@@ -47,6 +47,11 @@ impl DataStorer {
         self.root.join("inventario.bin")
     }
 
+    pub fn open_root_folder(&self) -> anyhow::Result<()> {
+        opener::open_browser(&self.root)?;
+        Ok(())
+    }
+
     pub fn save_inventory(&self, inv: &inventory::Inventory) -> anyhow::Result<()> {
         let file = File::create(self.inventory_file())?;
         let mut writer = BufWriter::new(&file);

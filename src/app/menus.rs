@@ -35,9 +35,8 @@ impl Menu {
 
 pub fn main_menu(app: &mut App) {
     let main_menu = Menu::new(vec![
-        (String::from("Inventario"), |app: &mut App| {
-            inventory_menu(app);
-        }),
+        (String::from("Inventario"), inventory_menu),
+        (String::from("Abrir Carpeta de Datos"), open_data_folder),
         (String::from("Salir"), |app: &mut App| {
             app.should_exit = true
         }),
@@ -230,4 +229,17 @@ pub fn inventory_show(app: &mut App) {
     };
 
     app.inventory.print();
+}
+
+pub fn open_data_folder(app: &mut App) {
+    if let Some(s) = &app.storer
+        && let Err(e) = s.open_root_folder()
+    {
+        println!(
+            "{} {}",
+            "Hubo un error abriendo la carpeta de datos: ".fg::<Cyan>(),
+            e.fg::<Red>()
+        );
+        input::halt_until_enter();
+    }
 }
