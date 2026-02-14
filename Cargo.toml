@@ -1,0 +1,11 @@
+[package]
+name = "stocksense"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+binrw = "0.15.0"
+clearscreen = "4.0.3"
+defer-rs = "0.1.0"
+owo-colors = "4.2.3"
+rand = "0.10.0"
