@@ -1,13 +1,15 @@
 use std::{
     fs::{self, File},
-    io::{BufWriter, Write},
+    io::{self, BufWriter},
     path::PathBuf,
 };
+
+use chrono::prelude::*;
 
 use binrw::io::BufReader;
 
 use crate::app::inventory;
-use crate::app::{self, inventory::Inventory};
+use crate::app::inventory::Inventory;
 
 pub struct DataStorer {
     root: PathBuf,
@@ -47,6 +49,40 @@ impl DataStorer {
         self.root.join("inventario.bin")
     }
 
+    fn csv_file(&self) -> Result<File, io::Error> {
+        const EXTENSION: &str = ".csv";
+
+        let local_now = Local::now();
+        let base = format!(
+            "ESTADO_INVENTARIO_{}-{}-{}",
+            local_now.year(),
+            local_now.month(),
+            local_now.day()
+        );
+
+        for i in 0.. {
+            let f = format!(
+                "{}{}{}",
+                base,
+                if i > 0 {
+                    format!("_({})", i)
+                } else {
+                    String::new()
+                },
+                EXTENSION
+            );
+
+            let path = self.exports.join(&f);
+
+            if let Ok(v) = fs::exists(&path)
+                && !v
+            {
+                return File::create(&path);
+            };
+        }
+        unreachable!()
+    }
+
     pub fn open_root_folder(&self) -> anyhow::Result<()> {
         opener::open_browser(&self.root)?;
         Ok(())
@@ -63,5 +99,11 @@ impl DataStorer {
         let file = File::open(self.inventory_file())?;
         let mut reader = BufReader::new(file);
         Inventory::load_from_stream(&mut reader)
+    }
+
+    pub fn export_inventory(&self, inv: &inventory::Inventory) -> anyhow::Result<()> {
+        let file = self.csv_file()?;
+        let mut writer = BufWriter::new(&file);
+        inv.csv_to_stream(&mut writer)
     }
 }

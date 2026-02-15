@@ -27,10 +27,19 @@ impl fmt::Display for InventoryError {
 
 #[derive(Serialize, Deserialize)]
 pub struct InventoryItem {
+    #[serde(rename = "ID")]
     id: String,
+
+    #[serde(rename = "Nombre")]
     name: String,
+
+    #[serde(rename = "Proveedor")]
     provider: String,
+
+    #[serde(rename = "Stock")]
     quantity_left: u16,
+
+    #[serde(rename = "Precio")]
     price: f32,
 }
 

@@ -1,3 +1,5 @@
+use std::io;
+
 use crate::app::App;
 use crate::app::input;
 use crate::app::inventory::InventoryItem;
@@ -67,6 +69,7 @@ pub fn inventory_menu(app: &mut App) {
         (String::from("Remover del inventario"), inventory_remove),
         (String::from("Editar inventario"), inventory_edit),
         (String::from("Mostrar inventario"), inventory_show),
+        (String::from("Exportar inventario (CSV)"), inventory_export),
         (String::from("Salir"), |app: &mut App| {
             app.should_exit = true
         }),
@@ -229,6 +232,44 @@ pub fn inventory_show(app: &mut App) {
     };
 
     app.inventory.print();
+}
+
+pub fn inventory_export(app: &mut App) {
+    clearscreen::clear().ok();
+    println!("{}\n", titles::inventory_title().fg::<Green>());
+
+    defer! {
+        input::halt_until_enter();
+    };
+
+    if app.inventory.csv_to_stream(&mut io::stdout()).is_err() {
+        println!("{}", "No se pudo serializar el inventario".fg::<Red>());
+    }
+    println!("Inventario Serializado.");
+
+    if let Some(s) = &app.storer {
+        match s.export_inventory(&app.inventory) {
+            Ok(_) => {
+                println!(
+                    "{}",
+                    "El inventario se exportó correctamente.".fg::<Green>()
+                )
+            }
+            Err(e) => {
+                println!(
+                    "{} {}",
+                    "Ocurrió un error exportando el inventario: ".fg::<Cyan>(),
+                    e.fg::<Red>()
+                )
+            }
+        }
+    } else {
+        println!(
+            "{}",
+            "El programa se encuentra en modo no persistente. Por ende no se puede exportar a CSV."
+                .fg::<Red>()
+        )
+    }
 }
 
 pub fn open_data_folder(app: &mut App) {

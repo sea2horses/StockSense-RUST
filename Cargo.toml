@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.101"
 binrw = "0.15.0"
+chrono = "0.4.43"
 clearscreen = "4.0.3"
 csv = "1.4.0"
 defer-rs = "0.1.0"
