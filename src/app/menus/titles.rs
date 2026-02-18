@@ -15,3 +15,12 @@ pub fn inventory_title() -> &'static str {
 88 88  Y8    YP    888888 88  Y8   88   dP""""Yb 88  Yb 88  YbodP 
     "#
 }
+
+pub fn billing_title() -> &'static str {
+    r#"
+88""Yb 888888  dP""b8 88 .dP"Y8 888888 88""Yb  dP"Yb 
+88__dP 88__   dP   `" 88 `Ybo."   88   88__dP dP   Yb
+88"Yb  88""   Yb  "88 88 o.`Y8b   88   88"Yb  Yb   dP
+88  Yb 888888  YboodP 88 8bodP'   88   88  Yb  YbodP 
+    "#
+}

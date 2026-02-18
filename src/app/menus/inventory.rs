@@ -1,67 +1,13 @@
 use std::io;
 
-use crate::app::App;
-use crate::app::input;
-use crate::app::inventory::InventoryItem;
-use crate::app::titles;
 use defer_rs::defer;
 use owo_colors::{OwoColorize, colors::*};
 
-type MenuOption = (String, fn(&mut App));
-
-pub struct Menu {
-    options: Vec<MenuOption>,
-}
-
-impl Menu {
-    pub fn new(options: Vec<MenuOption>) -> Self {
-        Menu { options }
-    }
-
-    pub fn exec(&self, app: &mut App, index: usize) -> Option<()> {
-        if let Some(pair) = self.options.get(index - 1) {
-            let (_, func) = pair;
-            func(app);
-            return Some(());
-        }
-        None
-    }
-
-    pub fn print(&self) {
-        for (i, pair) in self.options.iter().enumerate() {
-            let (action, _) = pair;
-            println!("| {}. {}", i + 1, action.fg::<Yellow>())
-        }
-    }
-}
-
-pub fn main_menu(app: &mut App) {
-    let main_menu = Menu::new(vec![
-        (String::from("Inventario"), inventory_menu),
-        (String::from("Abrir Carpeta de Datos"), open_data_folder),
-        (String::from("Salir"), |app: &mut App| {
-            app.should_exit = true
-        }),
-    ]);
-
-    while !app.should_exit {
-        clearscreen::clear().ok();
-        // Print main title
-        println!("{}", titles::main_title().fg::<Green>());
-        println!(
-            "{} {}\n",
-            "Port a Rust hecho por".fg::<BrightRed>(),
-            "@sea2horses".fg::<Cyan>()
-        );
-        main_menu.print();
-
-        let selected: usize = input::read("> ", "Ingrese un número válido.");
-        if main_menu.exec(app, selected).is_none() {
-            println!("{}", "Opcion Inválida".fg::<Red>())
-        }
-    }
-    app.should_exit = false;
-}
+use crate::app::{
+    App, input,
+    inventory::InventoryItem,
+    menus::{Menu, titles},
+};
 
 pub fn inventory_menu(app: &mut App) {
     let inventory_menu = Menu::new(vec![
@@ -114,7 +60,7 @@ pub fn inventory_add(app: &mut App) {
     let provider = input::read_string("> ");
 
     println!("\n{}", "+ Cantidad en Stock: ".fg::<Cyan>());
-    let quantity_left: u16 = input::read(
+    let quantity_left: usize = input::read(
         "> ",
         "Ingrese un numero entero válido. (Debe ser mayor o igual a 0)",
     );
@@ -202,7 +148,7 @@ pub fn inventory_edit(app: &mut App) {
         temp.get_quantity_left().fg::<Green>()
     );
     println!("\n{}", "+ Cantidad en Stock: ".fg::<Cyan>());
-    let quantity_left: Option<u16> = input::read_optional(
+    let quantity_left: Option<usize> = input::read_optional(
         "> ",
         "Ingrese un numero entero válido. (Debe ser mayor o igual a 0)",
     );
@@ -269,18 +215,5 @@ pub fn inventory_export(app: &mut App) {
             "El programa se encuentra en modo no persistente. Por ende no se puede exportar a CSV."
                 .fg::<Red>()
         )
-    }
-}
-
-pub fn open_data_folder(app: &mut App) {
-    if let Some(s) = &app.storer
-        && let Err(e) = s.open_root_folder()
-    {
-        println!(
-            "{} {}",
-            "Hubo un error abriendo la carpeta de datos: ".fg::<Cyan>(),
-            e.fg::<Red>()
-        );
-        input::halt_until_enter();
     }
 }

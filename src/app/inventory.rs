@@ -11,6 +11,8 @@ pub enum InventoryError {
     EmptyName,
     EmptyProvider,
     NegativePrice(f32),
+    NotEnoughStock(usize),
+    InvalidStock(usize)
 }
 
 impl fmt::Display for InventoryError {
@@ -21,6 +23,8 @@ impl fmt::Display for InventoryError {
             Self::EmptyName => write!(f, "El nombre no puede estar vacío"),
             Self::EmptyProvider => write!(f, "El proveedor no puede estar vacío"),
             Self::NegativePrice(price) => write!(f, "El precio ({}) no puede ser negativo", price),
+            Self::NotEnoughStock(ask) => write!(f, "No hay suficiente Stock ({})!", ask),
+            Self::InvalidStock(ask) => write!(f, "El stock proveído ({}) es invalido.", ask)
         }
     }
 }
@@ -37,7 +41,7 @@ pub struct InventoryItem {
     provider: String,
 
     #[serde(rename = "Stock")]
-    quantity_left: u16,
+    quantity_left: usize,
 
     #[serde(rename = "Precio")]
     price: f32,
@@ -66,7 +70,7 @@ impl InventoryItem {
         self.provider.as_str()
     }
 
-    pub fn get_quantity_left(&self) -> u16 {
+    pub fn get_quantity_left(&self) -> usize {
         self.quantity_left
     }
 
@@ -101,7 +105,7 @@ impl InventoryItem {
         }
     }
 
-    pub fn set_quantity_left(&mut self, quantity: u16) {
+    pub fn set_quantity_left(&mut self, quantity: usize) {
         self.quantity_left = quantity;
     }
 
@@ -128,7 +132,7 @@ impl InventoryItem {
         id: &str,
         name: &str,
         provider: &str,
-        quantity_left: u16,
+        quantity_left: usize,
         price: f32,
     ) -> Result<Self, InventoryError> {
         let mut new = Self::default();
@@ -140,6 +144,20 @@ impl InventoryItem {
         new.set_price(price)?;
 
         Ok(new)
+    }
+}
+
+impl PartialEq for InventoryItem {
+    fn eq(&self, other: &Self) -> bool {
+        self.get_id() == other.get_id()
+    }
+}
+
+impl Eq for InventoryItem {}
+
+impl std::hash::Hash for InventoryItem {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
     }
 }
 
@@ -177,7 +195,7 @@ impl Inventory {
         &mut self,
         name: &str,
         provider: &str,
-        quantity_left: u16,
+        quantity_left: usize,
         price: f32,
     ) -> Result<(), InventoryError> {
         let item = InventoryItem::new(
@@ -213,7 +231,7 @@ impl Inventory {
         id: &str,
         name: Option<&str>,
         provider: Option<&str>,
-        quantity_left: Option<u16>,
+        quantity_left: Option<usize>,
         price: Option<f32>,
     ) -> Result<(), InventoryError> {
         if let Some(item) = self.find_mut(id) {
@@ -242,7 +260,7 @@ impl Inventory {
     pub fn print(&self) {
         for item in &self.items[..] {
             println!(
-                "|{}|: {}, Proveedor: {}\nCantidad Disponible: {}, Precio (Unitario): {}",
+                "- |{}|: {}, Proveedor: {}\nCantidad Disponible: {}, Precio (Unitario): ${:.2}",
                 item.get_id().fg::<Yellow>(),
                 item.get_name().fg::<Green>(),
                 item.get_provider().fg::<Cyan>(),

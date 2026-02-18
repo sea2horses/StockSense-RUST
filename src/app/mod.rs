@@ -2,11 +2,11 @@ use data::DataStorer;
 use inventory::Inventory;
 use owo_colors::{OwoColorize, colors::*};
 
+mod billing;
 mod data;
 mod input;
 mod inventory;
 mod menus;
-mod titles;
 
 pub struct App {
     inventory: Inventory,
